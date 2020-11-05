@@ -20,9 +20,8 @@ public class MailHandler {
         this.serverPassword = serverPassword;
     }
 
-    public void sendMail(Mail mail) {
+    public boolean sendMail(Mail mail) {
 
-//        System.out.println("Trying to send message");
         Properties properties = new Properties();
 
         properties.put("mail.smtp.auth", "true");
@@ -38,12 +37,11 @@ public class MailHandler {
         });
 
         try {
-//            System.out.println("Preparing message");
             Message message = prepareMessage(session, mail);
             Transport.send(message);
-//            System.out.println("Message sent successfully");
+            return true;
         } catch (MessagingException e) {
-            System.out.println("Error while sending email");
+            return false;
         }
     }
 
