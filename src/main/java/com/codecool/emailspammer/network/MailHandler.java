@@ -1,6 +1,8 @@
 package com.codecool.emailspammer.network;
 
 
+import com.codecool.emailspammer.mails.Mail;
+
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
@@ -10,17 +12,16 @@ import java.util.Properties;
 
 public class MailHandler {
 
-    private final String serverEmail = System.getenv("EMAIL");
-    private final String serverPassword = System.getenv("EMAIL_PASSWORD");
-    private final String clientEmail;
+    private final String serverEmail;
+    private final String serverPassword;
 
-    public MailHandler(String clientEmail) {
-        this.clientEmail = clientEmail;
+    public MailHandler(String serverEmail, String serverPassword) {
+        this.serverEmail = serverEmail;
+        this.serverPassword = serverPassword;
     }
 
-    public void sendMail(String messageBody) {
+    public boolean sendMail(Mail mail) {
 
-        System.out.println("Trying to send message");
         Properties properties = new Properties();
 
         properties.put("mail.smtp.auth", "true");
@@ -36,21 +37,20 @@ public class MailHandler {
         });
 
         try {
-            System.out.println("Preparing message");
-            Message message = prepareMessage(session, messageBody);
+            Message message = prepareMessage(session, mail);
             Transport.send(message);
-            System.out.println("Message sent successfully");
+            return true;
         } catch (MessagingException e) {
-            System.out.println("Error while sending email");
+            return false;
         }
     }
 
-    private Message prepareMessage(Session session, String messageBody) throws MessagingException {
+    private Message prepareMessage(Session session, Mail mail) throws MessagingException {
         Message message = new MimeMessage(session);
         message.setFrom(new InternetAddress(serverEmail));
-        message.setRecipient(Message.RecipientType.TO, new InternetAddress(clientEmail));
+        message.setRecipient(Message.RecipientType.TO, new InternetAddress(mail.getEmail()));
         message.setSubject("Spammer action");
-        message.setContent(composeMessage(messageBody), "text/html");
+        message.setContent(composeMessage(mail.getMessage()), "text/html");
         return message;
     }
 
