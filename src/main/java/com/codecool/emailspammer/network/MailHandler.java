@@ -13,14 +13,12 @@ public class MailHandler {
     private final String serverEmail = System.getenv("EMAIL");
     private final String serverPassword = System.getenv("EMAIL_PASSWORD");
     private final String clientEmail;
-    private final String message;
 
-    public MailHandler(String clientEmail, String message) {
+    public MailHandler(String clientEmail) {
         this.clientEmail = clientEmail;
-        this.message = message;
     }
 
-    public void sendMail() {
+    public void sendMail(String messageBody) {
 
         System.out.println("Trying to send message");
         Properties properties = new Properties();
@@ -39,7 +37,7 @@ public class MailHandler {
 
         try {
             System.out.println("Preparing message");
-            Message message = prepareMessage(session);
+            Message message = prepareMessage(session, messageBody);
             Transport.send(message);
             System.out.println("Message sent successfully");
         } catch (MessagingException e) {
@@ -47,21 +45,21 @@ public class MailHandler {
         }
     }
 
-    private Message prepareMessage(Session session) throws MessagingException {
+    private Message prepareMessage(Session session, String messageBody) throws MessagingException {
         Message message = new MimeMessage(session);
         message.setFrom(new InternetAddress(serverEmail));
         message.setRecipient(Message.RecipientType.TO, new InternetAddress(clientEmail));
         message.setSubject("Spammer action");
-        message.setContent(composeMessage(), "text/html");
+        message.setContent(composeMessage(messageBody), "text/html");
         return message;
     }
 
-    private String composeMessage() {
+    private String composeMessage(String messageBody) {
         return String.format(
                 "<p>Message: %s</p>" +
                 "<p>Date: %s</p>" +
                 "<p>From: %s</p>",
-                message, currentDate(), serverEmail);
+                messageBody, currentDate(), serverEmail);
     }
 
     private Object currentDate() {
